@@ -41,28 +41,45 @@ public static class TroopCreator
     }
 
     public static GameObject CreateTroop(TroopData troopData, Vector3 position) {
-        GameObject troop = new GameObject(troopData.name, typeof(Troop), typeof(BoxCollider));
+        GameObject troop = new GameObject(troopData.name, typeof(Troop), typeof(BoxCollider), typeof(Rigidbody));
         BoxCollider boxCollider = troop.GetComponent<BoxCollider>();
         boxCollider.center = new Vector3(0, 1, 0);
         boxCollider.size = new Vector3(12, 2, 6);
         boxCollider.isTrigger = true;
         troop.GetComponent<Troop>().movementSpeed = troopData.movementSpeed;
+        troop.GetComponent<Rigidbody>().useGravity = true;
 
         troop.tag = "Allies"; //TO DO: MAKE ALLIES NOT COLLIDE WITH OTHER ALLIES
-        troop.transform.position = new Vector3(position.x, 1, position.z); //always 1 unit above ground
+        troop.transform.position = new Vector3(position.x, 0.3f, position.z); //1 unit above ground
 
         float xPos, zPos;
         for (int z = 0; z < troopData.numZ; z++) {
             zPos = -(((troopData.numZ - 1) * troopData.spaceBetween) / 2) + (z * troopData.spaceBetween);
             for (int x = 0; x < troopData.numX; x++) {
                 xPos = -(((troopData.numX - 1) * troopData.spaceBetween) / 2) + (x * troopData.spaceBetween);
-                GameObject obj = Object.Instantiate(troopData.troopPrefabs[Random.Range(0, troopData.troopPrefabs.Count)], position + new Vector3(xPos, 0, zPos),
+                GameObject obj = Object.Instantiate(troopData.troopPrefabs[Random.Range(0, troopData.troopPrefabs.Count)], position + new Vector3(xPos, troop.transform.position.y, zPos),
                     Quaternion.identity, troop.transform);
                 obj.tag = "Allies";
-                obj.AddComponent<Unit>().troop = troop.GetComponent<Troop>(); //adds IndividualTroop script for each unit
+                obj.AddComponent<Unit>().troop = troop.GetComponent<Troop>(); //adds Unit script for each unit
                 
             }
         }
+
+        //Create Selected Sphere Above
+        GameObject selectSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        float height = 3;
+
+        Hover hoverComponent = selectSphere.AddComponent<Hover>();
+        hoverComponent.medianHeight = height;
+        hoverComponent.maxVelocity = 30;
+        selectSphere.transform.parent = troop.transform;
+        selectSphere.name = "Select Highlight";
+
+        selectSphere.transform.localPosition = new Vector3(0, height+1, 0);
+        selectSphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+
+        selectSphere.GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/SelectHighlight");
+        selectSphere.SetActive(false);
         return troop;
     }
 

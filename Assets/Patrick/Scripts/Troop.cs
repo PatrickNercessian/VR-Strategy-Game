@@ -72,18 +72,43 @@ public class Troop : MonoBehaviour
 
     private void FlipChildren() {
         foreach (Transform child in this.transform) {
-            child.Rotate(0.0f, 180, 0.0f);
+            if (child.GetComponent<Troop>() != null)
+                child.Rotate(0.0f, 180, 0.0f);
         }
     }
 
     private void ChangeAnimations() {
         foreach (Transform child in transform) {
-            Animator animator = child.GetComponent<Animator>();
-            if (isMoving) {
-                animator.SetBool("isMoving", true);
-            } else {
-                animator.SetBool("isMoving", false);
+            if (child.GetComponent<Troop>() != null)
+            {
+                Animator animator = child.GetComponent<Animator>();
+                if (isMoving)
+                {
+                    animator.SetBool("isMoving", true);
+                }
+                else
+                {
+                    animator.SetBool("isMoving", false);
+                }
             }
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag.Equals("Ground"))
+        {
+            this.GetComponent<Rigidbody>().useGravity = false;
+            this.GetComponent<Rigidbody>().isKinematic = true;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.tag.Equals("Ground"))
+        {
+            this.GetComponent<Rigidbody>().useGravity = true;
+            this.GetComponent<Rigidbody>().isKinematic = false;
         }
     }
 }
